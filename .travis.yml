@@ -27,9 +27,9 @@ cache:
 
 script:
   - mkdir build
-  - cd build
-  - cmake ../
-  - cd ..
+  - ls -la
+  - cmake -S ./ -B ./build/
+  - ls -la
   - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
   - bash generate_gcov.sh
   - sonar-scanner -Dsonar.cfamily.build-wrapper-output=bw-output
