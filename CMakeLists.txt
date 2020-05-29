@@ -1,92 +1,82 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.13)
 
 # Make PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR, and PROJECT_NAME available.
 set(PROJECT_NAME project1)
 project(${PROJECT_NAME})
-include(lib/gtest.cmake)
 
-SET(COVERAGE OFF CACHE BOOL "Coverage")
+set(PROJECT_DIR ${PROJECT_SOURCE_DIR})
+message("${BoldYellow}PROJECT_DIR: ${PROJECT_DIR}${ColourReset}")
 
-set(CMAKE_CXX_FLAGS "-g -Wall")
+include(internal_utils.cmake)
 
-# If you want your own include/ directory, set this, and then you can do
-# include_directories(${COMMON_INCLUDES}) in other CMakeLists.txt files.
-# set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
+########################################
+########  Directories assorted  ########
+########################################
+set(common_includes ${PROJECT_SOURCE_DIR}/include)
+message("${BoldBlue}common_includes: ${common_includes}${ColourReset}")
+set(gtest_includes "${PROJECT_SOURCE_DIR}/lib/gtest/googletest/include")
+message("${BoldBlue}gtest_includes: ${gtest_includes}${ColourReset}")
+set(gmock_includes "${PROJECT_SOURCE_DIR}/lib/gtest/googlemock/include")
+message("${BoldBlue}gmock_includes: ${gmock_includes}${ColourReset}")
 
-#----------------------------------------------------------------------------
-# Define project sources and includes
-#----------------------------------------------------------------------------
-set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
-include_directories(${COMMON_INCLUDES})
-file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
-list(REMOVE_ITEM SRC_FILES ${PROJECT_SOURCE_DIR}/src/main.cpp)
+###############################
+########  C++98 Files  ########
+###############################
+file(GLOB SRC_CXX_98_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+message("${Orangeybg}SRC_CXX_98_FILES: ${SRC_CXX_98_FILES}${ColourReset}")
+set(cxx98_flags "-g -fprofile-arcs -ftest-coverage") # The flags passed to the compiler to get coverage on Cygwin/Travis/Unix/Linux
+set(cxx98_libs "-lgcov") # The libraries used to compile the C++98 code on Cygwin/Travis/Unix/Linux
+set(cxx98_objetive "SrcCpp98") # Name of the target
+cxx_library_cxx_98("${cxx98_objetive}" "${common_includes}" "${cxx98_flags}" "${cxx98_libs}" "${SRC_CXX_98_FILES}")
 
-set(CMAKE_CXX_STANDARD 11)
+###############################
+########  C++11 Files  ########
+###############################
+# file(GLOB SRC_CXX_11_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+# message("${Orangeybg}SRC_CXX_11_FILES: ${SRC_CXX_11_FILES}${ColourReset}")
+###############################
+#          WARNING
+# In this example there is not any C++11 files
+# Example of how to do the C++11 compiling
+###############################
+# set(cxx11_objetive "SrcCpp11") # Name of the target
+# file(GLOB SRC_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp) # The files to be listed into SRC_FILES
+# message("${Grayishbg}SRC_FILES: ${SRC_FILES}${ColourReset}")
+# set(cxxtests_flags "-g -Wall -pedantic -O0") # The flags passed to the compiler on Cygwin/Travis/Unix/Linux
+# set(cxxtests_libs "-lm -lrt -lstdc++ -pthread") # The libraries used to compile the tests on Cygwin/Travis/Unix/Linux
+# cxx_library_cxx_11("${cxx11_objetive}" "${common_includes}" "${cxx11_flags}" "${cxx11_libs}" "${SRC_FILES}")
 
-set(O0_COMPILER_FLAGS "-o0"
-    CACHE INTERNAL "")
-
-function(append_no_optimization_compiler_flags)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${O0_COMPILER_FLAGS}" PARENT_SCOPE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${O0_COMPILER_FLAGS}" PARENT_SCOPE)
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${O0_COMPILER_FLAGS}" PARENT_SCOPE)
-    message(STATUS "Appending no optimization compiler flags: ${O0_COMPILER_FLAGS}")
-endfunction() # append_no_optimization_compiler_flags
+##########################################
+########  Output test executable  ########
+##########################################
+file(GLOB TEST_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
+message("${Grayishbg}TEST_FILES: ${TEST_FILES}${ColourReset}")
+set(outputUnitTest "RunUnitTests") # Name of the target
+message("${Magenta}Preparing ${outputUnitTest}${ColourReset}")
+# Create the list of folders involved in the test folder items
+# https://stackoverflow.com/questions/7533502/how-can-i-merge-multiple-lists-of-files-together-with-cmake
+set(include_folders_to_test ${common_includes} ${gtest_includes} ${gmock_includes})
+set(outputUnitTest_flags "-g -Wall -pedantic -O0") # The flags passed to the compiler on Cygwin/Travis/Unix/Linux
+set(outputUnitTest_libs "-lgtest_main -lgtest -lm -lrt -lstdc++ -pthread" ${cxxtests_objetive} ${cxx98_objetive})
+gtest_executable("${outputUnitTest}" "${include_folders_to_test}" "${outputUnitTest_flags}" "${outputUnitTest_libs}" "${TEST_FILES}")
 
 ################################
-# Normal Libraries & Executables
+########  Dependencies  ########
 ################################
-add_library(project1_lib ${SRC_FILES})
+# https://cmake.org/pipermail/cmake/2008-January/019020.html
+add_dependencies("${outputUnitTest}" "Building-google-test")
+###############################
+#          WARNING
+# cxx98_objetive depends of Building-google-test!
 
-# Key idea: SEPARATE OUT your main() function into its own file so it can be its
-# own executable. Separating out main() means you can add this library to be
-# used elsewhere (e.g linking to the test executable).
-#add_executable(project1 ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
-#target_link_libraries(project1 project1_lib)
-
-################################
-# Testing
-################################
-
-# Options. Turn on with 'cmake -Dmyvarname=ON'.
-option(BUILD_TESTS "Build all tests." OFF) # Makes boolean 'test' available.
-
-if (BUILD_TESTS)
-
-  enable_testing()
-	
-
-  ##############
-  # Unit Tests
-  ##############
-  add_executable(runUnitTests ${TEST_SRC_FILES})
-
-  if(CMAKE_COMPILER_IS_GNUCXX)
-  LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_modules")
-  include(CodeCoverage)
-  APPEND_NO_OPTIMIZATION_COMPILER_FLAGS()
-  APPEND_COVERAGE_COMPILER_FLAGS()
-  # this is optional if you want to exclude some directory from the report
-  #set(COVERAGE_LCOV_EXCLUDES 'dir1/*' 'dir2/*')
-  # Both setups - SETUP_TARGET_FOR_COVERAGE_LCOV and SETUP_TARGET_FOR_COVERAGE_LCOV must be after the add_executable
-  SETUP_TARGET_FOR_COVERAGE_LCOV(NAME generate_coverage
-                                EXECUTABLE runUnitTests
-                                DEPENDENCIES runUnitTests)
-  SETUP_TARGET_FOR_COVERAGE_GCOVR_XML( NAME generate_gcovr
-                                     EXECUTABLE runUnitTests
-                                     DEPENDENCIES runUnitTests)
-  endif()
-
-  # Standard linking to gtest stuff.
-  target_link_libraries(runUnitTests gtest pthread)
-
-  # Extra linking for the project.
-  target_link_libraries(runUnitTests project1_lib)
-
-  # This is so you can do 'make test' to see all your tests run, instead of
-  # manually running the executable runUnitTests to see those specific tests.
-  add_test(UnitTests runUnitTests)
-
-endif()
+#############################
+########  Execution  ########
+#############################
+# To execute the tests in this example, we must put a custom target to run them
+add_custom_target(Execute_tests ALL
+  COMMAND bin/${outputUnitTest}
+  DEPENDS ${outputUnitTest}
+  COMMENT "Executing the tests..."
+  VERBATIM)
+  
