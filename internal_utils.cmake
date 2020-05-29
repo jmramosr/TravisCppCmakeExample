@@ -14,7 +14,7 @@ set(GOOGLE_TEST_CMAKE_COMMANDS -Dgtest_build_samples=OFF -Dgtest_build_tests=OFF
 #########################################
 ########  Configure GOOGLE TEST  ########
 #########################################
-execute_process(COMMAND ${CMAKE_COMMAND} ${GOOGLE_TEST_CMAKE_COMMANDS} -S ${GOOGLE_TEST_FOLDER_LOCATION} -B ${GOOGLE_TEST_BUILD_DIRECTORY})
+execute_process(COMMAND ${CMAKE_COMMAND} ${GOOGLE_TEST_CMAKE_COMMANDS} -B ${GOOGLE_TEST_BUILD_DIRECTORY} -S ${GOOGLE_TEST_FOLDER_LOCATION})
 
 #####################################
 ########  Build GOOGLE TEST  ########
