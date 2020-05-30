@@ -28,7 +28,7 @@ cache:
 script:
   - mkdir build
   - ls -la
-  - cmake -B ./build -S .
+  - bash launching cmake.sh
   - ls -la
   - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
   - bash generate_gcov.sh
