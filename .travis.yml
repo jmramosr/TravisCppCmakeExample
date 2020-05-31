@@ -30,7 +30,7 @@ script:
   - cd cmake-gtest-build
   - cmake ../lib/gtest/CMakeLists.txt
   - ls -la
-  - make
+  - cmake --build .
   - cd ..
   - ls -la
   - mkdir build
