@@ -24,6 +24,7 @@ addons:
 install:
   - cmake --version
   - cmake --help
+  - cmake --help-full
   - ls -la ${TRAVIS_BUILD_DIR}
 #  # first we create a directory for the CMake binaries
 #  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
