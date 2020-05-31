@@ -26,9 +26,13 @@ cache:
   - '$HOME/.sonar/cache'
 
 script:
-  - mkdir build
+  - mkdir cmake-gtest-build
+  - cd cmake-gtest-build
+  - cmake -S ../lib/gtest/ -B .
   - ls -la
-  - bash "launching cmake.sh"
+  - make
+  - cd ..
+  - mkdir build
   - ls -la
   - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
   - bash generate_gcov.sh
