@@ -28,11 +28,14 @@ cache:
 script:
   - mkdir cmake-gtest-build
   - cd cmake-gtest-build
-  - cmake -S ../lib/gtest/ -B .
+  - cmake ../lib/gtest/CMakeLists.txt
   - ls -la
   - make
   - cd ..
+  - ls -la
   - mkdir build
+  - cd build
+  - cmake ../CMakeLists.txt
   - ls -la
   - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
   - bash generate_gcov.sh
