@@ -1,9 +1,11 @@
 # Defines functions and macros useful for building easily
 
+set(GOOGLE_TEST_BUILD_DIRECTORY cmake-gtest-build)
+
+if ( GTEST_BUILDING_IS_ACTIVATED )
 ##########################################
 ########  Setting up GOOGLE TEST  ########
 ##########################################
-set(GOOGLE_TEST_BUILD_DIRECTORY cmake-gtest-build)
 set(GOOGLE_TEST_BUILD_OUTPUT ${PROJECT_SOURCE_DIR}/${GOOGLE_TEST_BUILD_DIRECTORY})
 # https://stackoverflow.com/questions/3702115/creating-a-directory-in-cmake
 file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/${GOOGLE_TEST_BUILD_DIRECTORY})
@@ -14,7 +16,7 @@ set(GOOGLE_TEST_CMAKE_COMMANDS -Dgtest_build_samples=OFF -Dgtest_build_tests=OFF
 #########################################
 ########  Configure GOOGLE TEST  ########
 #########################################
-execute_process(COMMAND ${CMAKE_COMMAND} ${GOOGLE_TEST_CMAKE_COMMANDS} -B ${GOOGLE_TEST_BUILD_DIRECTORY} -S ${GOOGLE_TEST_FOLDER_LOCATION})
+execute_process(COMMAND ${CMAKE_COMMAND} ${GOOGLE_TEST_CMAKE_COMMANDS} -S ${GOOGLE_TEST_FOLDER_LOCATION} -B ${GOOGLE_TEST_BUILD_DIRECTORY})
 
 #####################################
 ########  Build GOOGLE TEST  ########
@@ -23,6 +25,7 @@ add_custom_target(Building-google-test ALL COMMAND ;)
 add_custom_command(TARGET Building-google-test PRE_BUILD
     COMMAND ${CMAKE_COMMAND} --build ${GOOGLE_TEST_BUILD_OUTPUT}
 )
+endif ( GTEST_BUILDING_IS_ACTIVATED )
 
 #####################################
 ########  Color definitions  ########
@@ -183,9 +186,9 @@ function(cxx_library_cxx_99 name include_folders c99_flags libraries)
   cxx_library_with_flags_cxx_99(${name} "" "${include_folders}" "${c99_flags}" "${libraries}" ${ARGN})
 endfunction()
 
-##############################
-########  Executable  ########
-##############################
+###################################
+########  Test Executable  ########
+###################################
 # Defines how the executable will be created.
 ## Usage example: gtest_executable("${exeProgam}" "${include_routes}" "${libraries_used}")
 function(gtest_executable name include_dirs exe_flags libs)
@@ -196,6 +199,7 @@ function(gtest_executable name include_dirs exe_flags libs)
   # message("${Magenta}libs: ${libs}${ColourReset}")
   # message("${Magenta}ARGN: ${ARGN}${ColourReset}")
   link_directories(${PROJECT_SOURCE_DIR}/${GOOGLE_TEST_BUILD_DIRECTORY}/lib)
+  message("${BoldBlue}Library: ${PROJECT_SOURCE_DIR}/${GOOGLE_TEST_BUILD_DIRECTORY}/lib${ColourReset}")
   add_executable(${name} ${ARGN})
   include_directories(${include_dirs})
   # Set the output directory for build artifacts

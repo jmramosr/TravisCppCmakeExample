@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.13)
 
 # Make PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR, and PROJECT_NAME available.
 set(PROJECT_NAME project1)
@@ -64,10 +64,10 @@ gtest_executable("${outputUnitTest}" "${include_folders_to_test}" "${outputUnitT
 ########  Dependencies  ########
 ################################
 # https://cmake.org/pipermail/cmake/2008-January/019020.html
-add_dependencies("${outputUnitTest}" "Building-google-test")
+add_dependencies("${outputUnitTest}" "${cxx98_objetive}")
 ###############################
 #          WARNING
-# cxx98_objetive depends of Building-google-test!
+# outputUnitTest depends of cxx98_objetive!
 
 
 #############################

@@ -15,36 +15,12 @@ addons:
 #      - gcovr
 #      - doxygen
       - cmake
+      - codecov
+      - gcovr
 
 #before_install:
 #  - pip install codecov
 #  - pip install gcovr
-
-# the install step will take care of deploying a newer cmake version
-install:
-  - cmake --version
-#  - cmake --help
-#  - cmake --help-full
-  - ls -la ${TRAVIS_BUILD_DIR}
-#  # first we create a directory for the CMake binaries
-#  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-#  - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-#  # we use wget to fetch the cmake binaries
-#  - travis_retry wget --no-check-certificate https://cmake.org/files/v3.3/cmake-3.3.2-Linux-x86_64.tar.gz
-#  # this is optional, but useful:
-#  # do a quick md5 check to ensure that the archive we downloaded did not get compromised
-#  - echo "f3546812c11ce7f5d64dc132a566b749 *cmake-3.3.2-Linux-x86_64.tar.gz" > cmake_md5.txt
-#  - md5sum -c cmake_md5.txt
-#  # extract the binaries; the output here is quite lengthy,
-#  # so we swallow it to not clutter up the travis console
-#  - tar -xvf cmake-3.3.2-Linux-x86_64.tar.gz > /dev/null
-#  - mv cmake-3.3.2-Linux-x86_64 cmake-install
-#  # add both the top-level directory and the bin directory from the archive
-#  # to the system PATH. By adding it to the front of the path we hide the
-#  # preinstalled CMake with our own.
-#  - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
-#  # don't forget to switch back to the main build directory once you are done
-#  - cd ${TRAVIS_BUILD_DIR}
 
 
 #cache:
@@ -55,34 +31,19 @@ install:
 
 
 before_script:
-  # using: https://riptutorial.com/cmake/example/4723/configure-travis-ci-with-newest-cmake
-  # ctest exist in the travis version, we can use this
+  # Google test library creation script
+  # you can use similar behaviour to compile another libraries and move them if you want.
+  # Mayor constraint: there is no cmake -S ./lib/gtest -B ./cmake-gtest-build in this version of cmake. That means we cannot specify the path-to-build directly.
+  # ctest exist in the travis version, we can use this in a hacky way:
+  # cmake -S ./lib/gtest -B ./cmake-gtest-build => ctest --build-and-test ./lib/gtest ./cmake-gtest-build --build-generator "Unix Makefiles"
   - ctest -Dgtest_build_samples=OFF -Dgtest_build_tests=OFF -Dgmock_build_tests=OFF -Dcxx_no_exception=ON -Dcxx_no_rtti=ON -DCMAKE_COMPILER_IS_GNUCXX=ON --build-and-test ./lib/gtest ./cmake-gtest-build --build-generator "Unix Makefiles"
+  # Checker if everything goes well (there will be a new folder called "cmake-gtest-build". You can check the inners of the folder, too.
   - ls -la ${TRAVIS_BUILD_DIR}
-#  # create a build folder for gtest
-#  - mkdir cmake-gtest-build
-#  # switch to that directory
-#  - cd cmake-gtest-build
-#  # run cmake for google tests
-#  - cmake -S ../lib/gtest -B .
-#  - ls -la #checker
-#  - cmake --build .
-#  - cd ..
-#  - ls -la #checker
-#  # create a build folder for the out-of-source build
-#  - mkdir build
-#  # switch to build directory
-#  - cd build
-#  # run cmake; here we assume that the project's
-#  # top-level CMakeLists.txt is located at '..'
-#  - cmake ..
-#  - ls -la
 
 script:
-  - echo "Testing the travis environment!"
-#  - build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
-#  - bash generate_gcov.sh
-#  - sonar-scanner -Dsonar.cfamily.build-wrapper-output=bw-output
-#
-#after_success:
-#  - codecov -t $CODECOV_TOKEN -X gcov
+  - build-wrapper-linux-x86-64 --out-dir bw-output ctest --build-and-test . ./build --build-generator "Unix Makefiles"
+  - bash generate_gcov.sh
+  - sonar-scanner -Dsonar.cfamily.build-wrapper-output=bw-output
+
+after_success:
+  - codecov -t $CODECOV_TOKEN -X gcov
