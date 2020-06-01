@@ -23,8 +23,8 @@ addons:
 # the install step will take care of deploying a newer cmake version
 install:
   - cmake --version
-  - cmake --help
-  - cmake --help-full
+#  - cmake --help
+#  - cmake --help-full
   - ls -la ${TRAVIS_BUILD_DIR}
 #  # first we create a directory for the CMake binaries
 #  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
