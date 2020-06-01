@@ -56,16 +56,18 @@ install:
 
 before_script:
   # using: https://riptutorial.com/cmake/example/4723/configure-travis-ci-with-newest-cmake
-  # create a build folder for gtest
-  - mkdir cmake-gtest-build
-  # switch to that directory
-  - cd cmake-gtest-build
-  # run cmake for google tests
-  - cmake -S ../lib/gtest -B .
-  - ls -la #checker
-  - cmake --build .
-  - cd ..
-  - ls -la #checker
+  # ctest exist in the travis version, we can use this
+  - ctest --build-and-test ./ ./build --build-generator "Unix Makefiles"
+#  # create a build folder for gtest
+#  - mkdir cmake-gtest-build
+#  # switch to that directory
+#  - cd cmake-gtest-build
+#  # run cmake for google tests
+#  - cmake -S ../lib/gtest -B .
+#  - ls -la #checker
+#  - cmake --build .
+#  - cd ..
+#  - ls -la #checker
 #  # create a build folder for the out-of-source build
 #  - mkdir build
 #  # switch to build directory
