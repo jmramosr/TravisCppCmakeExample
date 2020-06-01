@@ -18,8 +18,8 @@ addons:
       - codecov
       - gcovr
 
-#before_install:
-#  - pip install codecov
+before_install:
+ - pip install codecov
 #  - pip install gcovr
 
 
