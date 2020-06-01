@@ -58,6 +58,7 @@ before_script:
   # using: https://riptutorial.com/cmake/example/4723/configure-travis-ci-with-newest-cmake
   # ctest exist in the travis version, we can use this
   - ctest -Dgtest_build_samples=OFF -Dgtest_build_tests=OFF -Dgmock_build_tests=OFF -Dcxx_no_exception=ON -Dcxx_no_rtti=ON -DCMAKE_COMPILER_IS_GNUCXX=ON --build-and-test ./lib/gtest ./cmake-gtest-build --build-generator "Unix Makefiles"
+  - ls -la ${TRAVIS_BUILD_DIR}
 #  # create a build folder for gtest
 #  - mkdir cmake-gtest-build
 #  # switch to that directory
